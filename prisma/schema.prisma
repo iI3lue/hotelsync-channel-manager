@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Channel {
+  channel_id       String   @id @default(uuid()) @db.Uuid
+  slug             String   @unique @db.VarChar(36)
+  name             String   @db.VarChar(100)
+  provider_key_hash String  @db.VarChar(64)
+  is_active        Boolean  @default(true)
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @updatedAt @db.Timestamptz(6)
+
+  reservations ExternalReservation[]
+  inventory    ChannelInventory[]
+  rates        ChannelRate[]
+
+  @@map("channels")
+}
+
+model ExternalReservation {
+  external_reservation_id String   @id @default(uuid()) @db.Uuid
+  channel_id              String   @db.Uuid
+  external_id             String   @db.VarChar(100)
+  booking_id              String   @unique @db.Uuid
+  status                  String   @db.VarChar(20)
+  created_at              DateTime @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime @updatedAt @db.Timestamptz(6)
+
+  channel Channel @relation(fields: [channel_id], references: [channel_id], onDelete: Restrict)
+
+  @@unique([channel_id, external_id])
+  @@index([booking_id])
+  @@map("external_reservations")
+}
+
+model ChannelInventory {
+  channel_id     String   @db.Uuid
+  room_type_id   String   @db.Uuid
+  date           DateTime @db.Date
+  available_count Int
+  blocked_count   Int
+  updated_at     DateTime @updatedAt @db.Timestamptz(6)
+
+  channel Channel @relation(fields: [channel_id], references: [channel_id], onDelete: Cascade)
+
+  @@id([channel_id, room_type_id, date])
+  @@index([room_type_id, date])
+  @@map("channel_inventory")
+}
+
+model ChannelRate {
+  projection_key String   @id @db.VarChar(220)
+  channel_id     String   @db.Uuid
+  room_type_id   String   @db.Uuid
+  kind           String   @db.VarChar(20)
+  start_date     DateTime @db.Date
+  end_date       DateTime @db.Date
+  price          Decimal? @db.Decimal(10, 2)
+  multiplier     Decimal? @db.Decimal(5, 2)
+  min_stay       Int?
+  updated_at     DateTime @updatedAt @db.Timestamptz(6)
+
+  channel Channel @relation(fields: [channel_id], references: [channel_id], onDelete: Cascade)
+
+  @@index([channel_id, room_type_id, start_date])
+  @@map("channel_rates")
+}
