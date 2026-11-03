@@ -1,3 +1,4 @@
+import { gatewayHeaders } from "../middleware/gateway.js";
 import { AppError } from "../middleware/error-handler.js";
 import { SimulatedReservationInput } from "../validators/simulator.js";
 
@@ -31,6 +32,7 @@ async function requestBooking(
     response = await fetch(`${BOOKING_SERVICE_URL}${path}`, {
       method,
       headers: {
+        ...gatewayHeaders(),
         "x-channel-manager-key": CHANNEL_MANAGER_SERVICE_KEY,
         ...(body === undefined ? {} : { "Content-Type": "application/json" }),
       },

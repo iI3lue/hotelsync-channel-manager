@@ -1,10 +1,13 @@
 import express from "express";
+import { requireGateway } from "./middleware/gateway.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import simulatorRouter from "./routes/simulator.js";
 import { startEventsConsumer } from "./lib/events-consumer.js";
 
 const app = express();
 const PORT = process.env.PORT || 3008;
+
+app.use(requireGateway);
 
 app.use(express.json({ limit: "256kb" }));
 

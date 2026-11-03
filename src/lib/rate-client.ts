@@ -1,3 +1,4 @@
+import { gatewayHeaders } from "../middleware/gateway.js";
 import { AppError } from "../middleware/error-handler.js";
 
 const RATE_SERVICE_URL =
@@ -17,7 +18,7 @@ export async function fetchAvailabilityRange(
   try {
     response = await fetch(
       `${RATE_SERVICE_URL}/availability/range?room_type_id=${encodeURIComponent(roomTypeId)}&from=${from}&to=${to}`,
-      { signal: AbortSignal.timeout(5000) }
+      { headers: gatewayHeaders(), signal: AbortSignal.timeout(5000) }
     );
   } catch {
     throw new AppError(502, "Rate & Availability Service unavailable", "Bad Gateway");
@@ -36,7 +37,7 @@ export async function fetchAvailabilityDay(
   try {
     response = await fetch(
       `${RATE_SERVICE_URL}/availability?room_type_id=${encodeURIComponent(roomTypeId)}&date=${date}`,
-      { signal: AbortSignal.timeout(5000) }
+      { headers: gatewayHeaders(), signal: AbortSignal.timeout(5000) }
     );
   } catch {
     throw new AppError(502, "Rate & Availability Service unavailable", "Bad Gateway");
